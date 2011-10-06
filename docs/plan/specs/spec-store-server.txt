@@ -1,0 +1,29 @@
+# $Id$
+# ex: set ts=4 noet tw=78:
+
+Summary
+----------------------------------------------------------------------------
+
+Component:	Storeserver
+Summary:	Prepares output from Spider for storage in Repository
+Input:		doc id, stats/metrics and doc contents from Spider
+Output:		Same as input, except document is in compressed form
+Issues:		* This component will be CPU-bound
+			* Compression speed/efficiency
+
+Detailed account of operation
+----------------------------------------------------------------------------
+
+The storeserver merely takes input from the spider (docID, url length,
+document length, url, document, etc.), which it then forms into a compressed
+"packet," for storage in the repository.  
+
+The storeserver will use the same protocol as the spider and the repository,
+so that code should be implemented in a common file to avoid code duplication.
+
+We parse the document out of the input, compress it, then copy the rest of the
+input verbatim to the repository for storage
+
+Why the storeserver? To seperate the CPU-intensive task from the I/O
+intensive Spider and the disk-intensive Repository.
+

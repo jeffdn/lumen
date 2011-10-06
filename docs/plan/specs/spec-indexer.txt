@@ -1,0 +1,36 @@
+# $Id$
+# ex: set ts=8 noet tw=78:
+
+Summary
+----------------------------------------------------------------------------
+
+Component:	
+Summary:
+Input:
+Output:
+Issues:
+
+Detailed account of operation
+----------------------------------------------------------------------------
+
+Each "hit" is essentially a word, the word's position in the web page, the its
+font size, and capitalization.  When someone searches for a certain query, all
+the aforementioned factors come into play when determining the page's
+relationship with the query string.  The hits are placed into a forward
+index... <-- find out more about that
+
+The index also takes URL that are parsed out of web pages and places them
+into anchor files.  These anchor files contain what page the URL linked from,
+where it links to, and the text of the link (<a href=...>text</a>).  The URL
+resolver takes the URL's from the anchor files, converts them into document
+ID's, and then inserts the document id of the page linked from and the page 
+linked to into a links database.  This database is used for the pagerank
+system... <-- mmm, pagerank
+
+
+
+
+
+
+
+

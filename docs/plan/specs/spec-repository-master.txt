@@ -1,0 +1,61 @@
+# $Id$
+# ex: set ts=8 noet tw=78:
+
+Summary
+----------------------------------------------------------------------------
+
+Component:	the repository master server
+Summary:	the server that contains the metadata of all the files stored
+		in the repository
+Input:		
+	read: 	filename, chunk index
+	write:	?
+Output:		
+	read: 	chunk ID, location, byte range
+	write:	?
+
+Issues:		
+	- access speed of metadata cache...don't want to bottleneck - OK, not a
+	  serious problem if in memory.
+	- running out of memory for the cache
+
+Detailed account of operation
+----------------------------------------------------------------------------
+
+Initially we will follow Google's model for storage in the repository
+(lumen/docs/research/google.html, section 4.2.2, figure 2), in which the data
+is stored as a "packet," containing the document id, url length, pagelength,
+url, and page.  The repository's sole input is the storage server, which is
+the component that compresses the data inputted by the crawler.
+
+
+The master is to have no direct involvement in reading and writing files to
+the chunkserver.  In fact, the system is designed to "minimize the master's
+involvement in all operations." Instead, a file request is made from the client 
+to the master.  The master locates the chunk(s) on which the file resides, and
+returns their respective UID's, locations, and byte ranges.  The client does
+no more interaction with the master during the read or write.  The master's
+storage of metadata will likely be done in a binary tree, although I'm not yet
+sure.  Speed of cache accesses is of utmost importance to the master's
+operation.
+
+The master stores three types of metadata:
+	1) the file and chunk namespaces (I'm assuming this is some sort of
+	   hierarchy, although I'm not quite sure.)
+	2) the mapping of files to chunks, so the client knows what to request
+	3) the location of the replicas of each chunk (again, I assume that
+	   this is so if failure occurs, the next chunkserver is made the
+	   active one.)
+
+Further notes on metadata:
+	- all metadata should be stored in memory
+	- it is optimal for the metadata to be periodically sorted and garbage
+	  collected, as well as for chunk load balancing purposes
+	- metadata is not really ever "stored," because it merely polls the
+	  chunkservers upon boot to discover file/chunk locations, and
+	  periodically checkus up on them as well
+	- major changes in metadata are to be logged in an "operation log,"
+	  which serves not only to help with understanding problems, but to be
+	  a timeline of how a repository changed throughout the history of its
+	  usage. more later...
+	  

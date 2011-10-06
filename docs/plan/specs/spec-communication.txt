@@ -1,0 +1,44 @@
+# $Id$
+# ex: set ts=4 et:
+
+General Component Intercommunication Protocol Guidelines
+
+In an effort to standardize intercommunication between components, we here specify
+guidelines for said communication. 
+
+Guidelines:
+
+    ALIGNMENT
+    
+        Protocol should be 8-byte aligned where possible, so that no
+        <=8 byte fields are split across 8-byte boundaries. This allows
+        better parsing performance on 32 and 64 bit computers. Also, smaller
+        fields should be grouped together where possible.
+
+    BITFIELDS
+
+        Use of bitfields should be minimized, and where unavoidable, should be
+        grouped together so as to simplify porting to architecures of varying
+        endianness
+
+
+Octet(s) 
+
+0       Status Code         Whether or not an operation succeeded, and why/why not
+1       Component Type Id   What type of component sent this message
+2-3     Instance Id         Every running component should have an ID for tracking purposes
+4-7     Msg Len (octets)    
+
+?       Component/Msg-specific data
+
+Fields
+
+    Status
+
+        Code    Name            Meaning
+        0       OK              No error
+
+
+
+
+

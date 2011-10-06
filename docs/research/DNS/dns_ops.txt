@@ -1,0 +1,26 @@
+# $Id$
+# ex: set ts=8 noet tw=78
+
+This file details the operations necessary to resolve an IP address:
+
+1.  socket:     inet6 udp socket = fd 3
+2.  close:      fd 3
+3.  socket:     PF_FILE stream socket = fd 3
+4.  fcntl:      fd 3 nonblocking
+5.  connect:    ENOENT
+6.  close:      fd 3
+7.  repeat:     3->6
+8.  open file:  /etc/nsswitch.conf
+9.  open file:  /etc/resolv.conf
+10. open file:  /etc/hosts
+11. load lib:   libresolv
+12. load lib:   libnss_dns
+13. socket:     inet4 tcp socket, port 53, 192.168.1.110 = fd 3 (my dns server)
+14. fcntl:      fd 3 nonblocking
+15. poll:       fd 3
+16. send:       fd 3 "\206I\1\0\0\1\0\0\0\0\0\0\3www\16thatonewebpage\3" (query)
+17. poll:       fd 3
+18. recv:       fd 3 (dns response)
+19. repeat:     13->18 twice (don't know why, first was successful)
+
+After this, the downloading of the file occurs.

@@ -1,0 +1,40 @@
+# $Id$
+
+Code standards specification sheet
+
+Compiler:
+  GNU GCC, preferrably version >= 4.1.0
+  flags: -W -Wall -Wno-unused -pedantic
+
+Code style:
+  Editor:
+    vim:
+      set ts=4
+      set sw=4
+      set et
+
+  Before commit:
+    indent -kr -nut source_files
+    rm source_files\~
+    NOTE: so far i like:
+    	indent -kr -nut -i 2 -ppi 2 -l0 -saf -sai -saw -ncs -nlp -nfca file.c
+
+  Naming convention:
+    function:           type function_name(type var)
+    local var:          type var_name
+    global/file scope:  type Var_Name
+    constant/define:    #define CONSTANT_NAME
+    macro:              #define MACRO_NAME
+
+Some kind of Endianness-related macro must be defined!
+
+We assume 32 or 64 bit machine:
+
+Assumptions
+Bytes	Type
+-------------------------------
+1	char
+2	short
+4	int
+4 or 8	long
+

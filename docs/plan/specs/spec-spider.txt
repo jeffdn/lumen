@@ -1,0 +1,123 @@
+# $Id$
+# ex: set ts=4 noet tw=78:
+
+Summary
+----------------------------------------------------------------------------
+
+Component:  Spider
+Summary:	Handles many concurrent HTTP fetch requests from the URL
+          		Server and sends fetch results to the Store Server
+Input:      URL
+Output:     A Fetch Result, which contains a status, metrics and optionally
+                the contents of the URL file
+Issues:     * Must be able to handle large number of concurrent HTTP requests
+            * Must operate on a relatively strict time table
+            * Must be able to handle all types of HTTP responses, from
+                timeouts to old and broken implementations to endless
+                redirects
+
+Detailed account of operation
+----------------------------------------------------------------------------
+
+The Spider handles a large number of URL fetch requests as they come in from
+the URL Server. The Spider does no queueing or scheduling, this is all handled
+by the URL Server.
+
+
+Settings:
+
+    Timeout_Update: INT
+		Number of milliseconds between 
+	Timeout_Req: INT
+		
+    Max_Doc_Size: LONG
+
+The URL Server pushes URLs to the spider.  When the spider receives the URL,
+an HTTP request is generated and sent.  THe URL Server requires a response
+from the Spider to manage its scheduling, so the Spider MUST respond with a
+'DONE' response when the URL request is completed (success or failure). If the
+results of the fetch take longer than Timeout_Update seconds to complete,
+the Spider MUST inform the URL Server that it needs more time with a 'WORKING'
+message, otherwise the URL Server will eventually give up, assuming the Spider
+has crashed.
+The transaction should look something
+like this:
+
+
+Receiving URLs:
+
+spider->urlserver:
+
+'GET' ' ' <URL_COUNT> '\n'
+
+urlserver->spider:
+
+<TRANS_ID> ' ' <DOC_ID> ' ' <HOST_IP> ' ' <HOST_NAME> ' ' <URL> '\n'
+
+(Optional) if the spider needs more time...
+
+'WORKING' ' ' <TRANS_ID> '\n'
+
+and once the transaction is complete...
+
+'DONE' ' ' <TRANS_ID> '\n'
+
+The Spider MUST respond with a status update to the URL Server within 
+Timeout_Update seconds.
+
+
+Fetching URLs:
+
+Once a URL/Host IP have been received a fetch attempt SHOULD be launched ASAP.
+It is recommended that non-blocking I/O be used as an implementation, but
+those decisions are ultimately up to the implementor.
+
+A fetch attempt MUST have a the following properties:
+
+* a "WORKING" timeout, after which, should the request still be active, a
+    "WORKING" status update MUST be sent to the urlserver
+* a maximum total timeout, after which an incomplete response is
+    considered finished and timed out and recoded as such.
+* once a fetch attempt it complete, whatever the status, the urlserver
+    MUST be notified via a "DONE" status update
+* the fetch must have a "success" boolean attribute, which reflects, based
+    various properties of the response, whether or not a document was
+    received and whether or not this data is ultimately 
+
+	HTTP Response Codes
+	
+	The fetch MUST account for all possible HTTP Response codes and take
+    action appropriately. For example, it must decide under what circumstances
+	it will follow redirects. For example:
+
+	301 Moved Permanently - The requested resource has been assigned a new
+	permanent URI and any future references to this resource SHOULD use one of
+	the returned URIs. In this case, the spider should record the result for
+	the original URL and follow the new one. However, care MUST be made to
+	handle multiple 301 redirects. Do we record each result for each URL? How
+	many redirects do we follow before we give up?
+
+After a page has been fetched by the Spider, it takes the raw document and
+submits it to the storage server for compression and saving. The
+Spider->Storeserver protocol will be binary for efficiency and will be
+structured as follows:
+
+	Bytes	Name
+	---------------------------------------------------------------------
+	4		doc_id
+	1		success? 0=false, 1=true
+	1		more specific reponse code (redirected to another url, etc.)
+	1		http response code, as an enumeration (not literal http code)
+	1		unused (padding)
+	4		milliseconds the request took to finish
+	2		url_len
+	2		new_url_len, 0 == none
+	4		length of document data (in bytes)
+	0-n		url
+	0-n		new url (if one should be used in place of existing url)
+	0-n		document data
+
+	All fields MUST be in network byte order (see htons()/htonl() functions)
+    to allow for machines of various endianness to communicate
+	
+

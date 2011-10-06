@@ -1,0 +1,81 @@
+# $Id$
+# ex: set ts=4 et tw=78:
+
+Summary
+----------------------------------------------------------------------------
+
+Component:  Document Index
+Summary:    long-term storage and retrieval of document metadata
+Input:      
+    Read:   
+        Document by id:     doc_id
+        Spider candidates:  doc_req_cnt, rej_domain_cnt,
+                                [ rej_domain_0, ... ]
+    Write:  doc_id, status, checksum, stats, url, title
+Output:     
+    Read:   response code, status, url resp cnt,
+                [ [ checksum, stats, url, title ], [ ... ] ]
+    Write:  status code, ...?
+Consider:   
+            * low latency read results
+            * efficient use of storage space
+Issues:
+            Must we write and then respond, or can we cache writes and
+            respond immediately?
+
+Detailed account of operation
+----------------------------------------------------------------------------
+
+The data in the document index is ordered by the document id, and
+contains the current document status (not specified... assuming perhaps its
+metrics as far as size, speed, last updated, etc.), a pointer to its location in the
+repository (for easy access, preventing searches), the checksum of the
+document, and statistics about the document.  "If the document has been
+crawled, it also contains a pointer into a variable width file called docinfo
+which contains its URL and title. Otherwise the pointer points into the
+URLlist which contains just the URL." (section 4.2.3).
+
+The document also has some functionality which enables it to be used to take a
+URL, and convert it into a document id.  A binary search is performed on the
+URL's checksum, and this is matched to a already generated document id, to aid
+in the speed of locating documents and their information.
+
+
+    Document Statistics
+
+    Bytes   Description
+    -------------------------------------------------------------------------
+    4       Domain id
+    4       Sub-domain id
+    4       Last update - UNIX timestamp (includes spider candidate reads and
+                update writes)
+    2       Update Count - an update has been performed, either a spider
+                candidate read or an update write
+    2       Fail Count - an update noting that this page failed
+
+
+Fetch document by id:
+Any document's metadata must be available when supplied a doc id.
+
+Spider candidates:
+The URLserver will poll the doc index regularly to ask for candidates to
+spider. These requests are more complex than doc id queries.
+
+    Parameters:
+        doc_req_cnt
+            number of urls to be returned. We may return less than this, but
+            never greater.
+        reject_dom_cnt
+            number of domain ids in our reject list. If this is > 0, the
+            resultset may not contain any URLs whose domain exists ini this
+            list
+        reject_dom_list
+            the list of domains to not include any documents from. it is
+            important that this list is highly respected.  the ips of the
+            domain in this list are irrelevant to the doc index.
+
+Smart decisions must be made about which pages in the doc index are the best
+candidates to be next visited. The doc index will contain both pages that have
+been previously fetched in entirety and also URLs that have never been
+fetched. See docs/research/efficient_crawling.pdf
+

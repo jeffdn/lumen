@@ -1,0 +1,42 @@
+# $Id$
+# ex: set ts=8 noet tw=78:
+
+Summary
+----------------------------------------------------------------------------
+
+Component:	A repository chunkserver
+Summary:	unreliable, long-term storage of a relatively small number of
+		relatively big "chunk" files accessible over a network
+Input:
+	set: data to be placed in a chunk(s)
+	get: chunk id(s) and byte positions
+Output:
+	set: success/error
+	get: dataset of chunk ids + byte ranges (?)
+Issues:
+	* data integrity
+	* 
+
+Detailed account of operation
+----------------------------------------------------------------------------
+
+Initially we will follow Google's model for storage in the repository
+(lumen/docs/research/google.html, section 4.2.2, figure 2), in which the data
+is stored as a "packet," containing the document id, url length, pagelength,
+url, and page.  The repository's sole input is the storage server, which is
+the component that compresses the data inputted by the crawler.
+
+Each chunk on the chunkserver is assigned a 64-bit UID.  This UID is unique to
+that chunk across the entire filesystem, and is used for when reads or writes
+are made on the file system.  The chunk ID and a byte range is required for
+reads and writes.
+
+Upon boot a chunkserver knows:
+
+ - who its master is
+ - its own disk usage
+ - the UID's of its chunks
+
+The chunkserver is polled by the master if/when the master (re)boots.  The
+master regenerates it's metadata from these polls, and the chunkserver must
+periodically respond to heartbeat messages at some YTBD interval.

@@ -1,0 +1,764 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<META NAME="Generator" CONTENT="NetObjects Fusion 5.0.2 for Windows">
+<TITLE>Pagerank Explained Correctly with Examples</TITLE>
+<SCRIPT>
+<!--
+function F_loadRollover(){} function F_roll(){}
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE="JavaScript1.2" SRC="http://www.iprcom.com/rollover.js"></SCRIPT>
+</HEAD>
+<BODY NOF="(MB=(Freebies, 68, 50, 140, 15), L=(pagerankLayout, 577, 16252))" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#000099" VLINK="#003399" ALINK="#000099" TOPMARGIN=0 LEFTMARGIN=0 MARGINWIDTH=0 MARGINHEIGHT=0>
+    <TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH=614 NOF=LY>
+        <TR VALIGN=TOP ALIGN=LEFT>
+            <TD WIDTH=14 HEIGHT=8><IMG SRC="http://www.iprcom.com/clearpixel.gif" WIDTH=14 HEIGHT=1 BORDER=0></TD>
+            <TD></TD>
+        </TR>
+        <TR VALIGN=TOP ALIGN=LEFT>
+            <TD HEIGHT=60></TD>
+        </TR>
+    </TABLE>
+    <TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=717 NOF=LY>
+        <TR VALIGN=TOP ALIGN=LEFT>
+            <TD>
+                <TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH=133 NOF=LY>
+                    <TR VALIGN=TOP ALIGN=LEFT>
+                        <TD WIDTH=13 HEIGHT=125><IMG SRC="http://www.iprcom.com/clearpixel.gif" WIDTH=13 HEIGHT=1 BORDER=0></TD>
+                        <TD WIDTH=120>
+                        </TD>
+                    </TR>
+					 <TR VALIGN=TOP ALIGN=LEFT>
+          <td><IMG SRC="../clearpixel.gif" WIDTH=1 HEIGHT=15 BORDER=0></TD>
+        </TR>
+        <tr> 
+		  <td></td>
+          <td> <script type="text/javascript">
+<!--
+google_ad_client = 'pub-8259747279030049';
+google_ad_width = 120;
+google_ad_height = 600;
+google_ad_format = '120x600_as';
+// -->
+</script> <script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script> 
+</td>
+        </tr>
+					
+                </TABLE>
+            </TD>
+            <TD>
+                <TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH=584 NOF=LY>
+                    <TR VALIGN=TOP ALIGN=LEFT>
+                        <TD WIDTH=7 HEIGHT=11><IMG SRC="http://www.iprcom.com/clearpixel.gif" WIDTH=7 HEIGHT=1 BORDER=0></TD>
+                        <TD WIDTH=577><IMG SRC="http://www.iprcom.com/clearpixel.gif" WIDTH=577 HEIGHT=1 BORDER=0></TD>
+                    </TR>
+                    <TR VALIGN=TOP ALIGN=LEFT>
+                        <TD></TD>
+                        <TD WIDTH=577>
+                            <P ALIGN=CENTER>&nbsp;</P>
+                            <H1 ALIGN=CENTER>The Google Pagerank Algorithm<BR>and How It Works</H1>
+                            <P ALIGN=CENTER>Ian Rogers<BR>IPR Computing Ltd.<BR><A HREF="mailto:ian@iprcom.com">ian@iprcom.com</A></P>
+                            <H3>Introduction</H3>
+                            <P>Page Rank is a topic much discussed by Search Engine Optimisation (SEO) experts. At the heart of PageRank is a mathematical formula that seems scary to look at but is actually fairly simple to understand.</P>
+                            <P>Despite this many people seem to get it wrong! In particular “Chris Ridings of www.searchenginesystems.net” has written a paper entitled “PageRank Explained: Everything you’ve always wanted to know about PageRank”, 
+                                pointed to by many people, that contains a <A HREF="http://www.iprcom.com/papers/pagerank/altered_equation.html">fundamental mistake</A> early on in the explanation! Unfortunately this means some of the recommendations in the paper are not quite accurate.
+                            </P>
+                            <P>By showing code to correctly calculate real PageRank I hope to achieve several things in this response:</P>
+                            <OL>
+                                <LI>Clearly explain how PageRank is calculated.</LI>
+                                <LI>Go through every example in Chris’ paper, and add some more of my own, showing the correct PageRank for each diagram. By showing the code used to calculate each diagram I’ve opened myself up to peer review - 
+                                    mostly in an effort to make sure the examples are correct, but also because the code can help explain the PageRank calculations.</LI>
+                                <LI>Describe some principles and observations on website design based on these correctly calculated examples.</LI>
+                            </OL>
+                            <P>Any good web designer should take the time to fully understand how PageRank really works - if you don’t then your site’s layout could be seriously hurting your Google listings!</P>
+                            <P>[Note: I have nothing in particular against Chris. If I find any other papers on the subject I’ll try to comment evenly]</P>
+                            <H3>How is PageRank Used?</H3>
+                            <P>PageRank is one of the methods Google uses to determine a page’s relevance or importance. It is only one part of the story when it comes to the Google listing, but the other aspects are discussed elsewhere (and are 
+                                ever changing) and PageRank is interesting enough to deserve a paper of its own.</P>
+                            <P>PageRank is also displayed on the toolbar of your browser if you’ve installed the Google toolbar (<A HREF="http://toolbar.google.com/">http://toolbar.google.com/</A>). But the Toolbar PageRank only goes from 0 – 10 
+                                and seems to be something like a logarithmic scale:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER">
+                                            <TABLE ID="Table1" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="68%">
+                                                <TR VALIGN=TOP>
+                                                    <TD ALIGN=CENTER WIDTH="49%">
+                                                        <P ALIGN=CENTER><B>Toolbar PageRank<BR>(log base 10)</B></P>
+                                                    </TD>
+                                                    <TD ALIGN=CENTER WIDTH="50%">
+                                                        <P ALIGN=CENTER><B>Real PageRank</B></P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD ALIGN=CENTER WIDTH="49%">
+                                                        <P ALIGN=CENTER>0</P>
+                                                    </TD>
+                                                    <TD ALIGN=CENTER WIDTH="50%">
+                                                        <P ALIGN=CENTER>0 - 10</P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD ALIGN=CENTER WIDTH="49%">
+                                                        <P ALIGN=CENTER>1</P>
+                                                    </TD>
+                                                    <TD ALIGN=CENTER WIDTH="50%">
+                                                        <P ALIGN=CENTER>100 - 1,000</P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD ALIGN=CENTER WIDTH="49%">
+                                                        <P ALIGN=CENTER>2</P>
+                                                    </TD>
+                                                    <TD ALIGN=CENTER WIDTH="50%">
+                                                        <P ALIGN=CENTER>1,000 - 10,000</P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD ALIGN=CENTER WIDTH="49%">
+                                                        <P ALIGN=CENTER>3</P>
+                                                    </TD>
+                                                    <TD ALIGN=CENTER WIDTH="50%">
+                                                        <P ALIGN=CENTER>10,000 - 100,000</P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD ALIGN=CENTER WIDTH="49%">
+                                                        <P ALIGN=CENTER>4</P>
+                                                    </TD>
+                                                    <TD ALIGN=CENTER WIDTH="50%">
+                                                        <P ALIGN=CENTER>and so on...</P>
+                                                    </TD>
+                                                </TR>
+                                            </TABLE>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P>We can’t know the exact details of the scale because, as we’ll see later, the maximum PR of all pages on the web changes every month when Google does its re-indexing! If we presume the 
+                                scale is logarithmic (although there is only anecdotal evidence for this at the time of writing) then Google could simply give the highest actual PR page a toolbar PR of 10 and scale the rest appropriately. </P>
+                            <P>Also the toolbar sometimes guesses! The toolbar often shows me a Toolbar PR for pages I’ve only just uploaded and cannot possibly be in the index yet! </P>
+                            <P>What seems to be happening is that the toolbar looks at the URL of the page the browser is displaying and strips off everything down the last “/” (i.e. it goes to the “parent” page in URL 
+                                terms). If Google has a Toolbar PR for that parent then it subtracts 1 and shows that as the Toolbar PR for this page. If there’s no PR for the parent it goes to the parent’s parent’s page, 
+                                but subtracting 2, and so on all the way up to the root of your site.&nbsp; If it can’t find a Toolbar PR to display in this way, that is if it doesn’t find a page with a real calculated PR, then the bar is 
+                                greyed out.</P>
+                            <P>Note that if the Toolbar is guessing in this way, the Actual PR of the page is 0 - though its PR will be calculated shortly after the Google spider first sees it.</P>
+                            <P>PageRank says nothing about the content or size of a page, the language it’s written in, or the text used in the anchor of a link!</P>
+                            <H3>Definitions</H3>
+                            <P>I’ve started to use some technical terms and shorthand in this paper. Now’s as good a time as any to define all the terms I’ll use:</P>
+                            <P>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER">
+                                            <TABLE ID="Table2" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="77%">
+                                                <TR>
+                                                    <TD VALIGN=TOP WIDTH="21%">
+                                                        <P><B>PR: </B></P>
+                                                    </TD>
+                                                    <TD WIDTH="78%">
+                                                        <P>Shorthand for PageRank: the actual, real, page rank for each page as calculated by Google. As we’ll see later this can range from 0.15 to billions.</P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD VALIGN=TOP WIDTH="21%">
+                                                        <P><B>Toolbar PR:</B></P>
+                                                    </TD>
+                                                    <TD WIDTH="78%">
+                                                        <P>The PageRank displayed in the Google toolbar in your browser. This ranges from 0 to 10.</P>
+                                                    </TD>
+                                                </TR>
+                                                <TR>
+                                                    <TD VALIGN=TOP WIDTH="21%">
+                                                        <P><B>Backlink:</B></P>
+                                                    </TD>
+                                                    <TD WIDTH="78%">
+                                                        <P>If page A links out to page B, then page B is said to have a “backlink” from page A.</P>
+                                                    </TD>
+                                                </TR>
+                                            </TABLE>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P>That’s enough of that, let’s get back to the meat…</P>
+                            <H3><A NAME="what"></A>So what is PageRank?</H3>
+                            <P>In short PageRank is a “vote”, by all the other pages on the Web, about how important a page is. A link to a page counts as a vote of support. If there’s no link there’s no support (but it’s an 
+                                abstention from voting rather than a vote against the page). </P>
+                            <P>Quoting from the original Google paper, PageRank is defined like this:</P>
+                            <UL>
+                                <P ALIGN=LEFT><I>We assume page A has pages T1...Tn which point to it (i.e., are citations). The parameter d is a damping factor which can be set between 0 and 1. We usually set 
+                                    d to 0.85. There are more details about d in the next section. Also C(A) is defined as the number of links going out of page A. The PageRank of a page A is given as follows:</I> </P>
+                                <P ALIGN=LEFT><I>PR(A) = (1-d) + d (PR(T1)/C(T1) + ... + PR(Tn)/C(Tn))</I> </P>
+                                <P ALIGN=LEFT><I>Note that the PageRanks form a probability distribution over web pages, so the sum of all web pages' PageRanks will be one.</I></P>
+                                <P><I>PageRank or PR(A) can be calculated using a simple iterative algorithm, and corresponds to the principal eigenvector of the normalized link matrix of the web.</I></P>
+                            </UL>
+                            <P>but that’s not too helpful so let’s break it down into sections.</P>
+                            <OL>
+                                <LI><B>PR(Tn)</B> - Each page has a notion of its own self-importance. That’s “PR(T1)” for the first page in the web all the way up to “PR(Tn)” for the last page</LI>
+                                <LI><B>C(Tn)</B> - Each page spreads its vote out evenly amongst all of it’s outgoing links. The count, or number, of outgoing links for page 1 is “C(T1)”, “C(Tn)” for page n, and so on for all pages. </LI>
+                                <LI><B>PR(Tn)/C(Tn)</B> - so if our page (page A) has a backlink from page “n” the share of the vote page A will get is “PR(Tn)/C(Tn)”</LI>
+                                <LI><B>d(...</B> - All these fractions of votes are added together but, to stop the other pages having too much influence, this total vote is “damped down” by multiplying it by 0.85 (the factor “d”)</LI>
+                                <LI><B>(1 - d)</B> - The (1 – d) bit at the beginning is a bit of probability math magic so the “<I>sum of all web pages' PageRanks will be one</I>”: it adds in the bit lost by the <B>d(...</B>. It also means 
+                                    that if a page has no links to it (no backlinks) even then it will still get a small PR of 0.15 (i.e. 1 – 0.85). (Aside: the Google paper says “the sum of all pages” but they mean the 
+                                    “the normalised sum” – otherwise known as “the average” to you and me.</LI>
+                            </OL>
+                            <H3>How is PageRank Calculated?</H3>
+                            <P>This is where it gets tricky. The PR of each page depends on the PR of the pages pointing to it. But we won’t know what PR those pages have until the pages pointing to <B>them</B> have their PR 
+                                calculated and so on… And when you consider that page links can form circles it seems impossible to do this calculation!</P>
+                            <P>But actually it’s not that bad. Remember this bit of the  Google paper:</P>
+                            <UL>
+                                <P ALIGN=LEFT><I>PageRank or PR(A) can be calculated using a simple iterative algorithm, and corresponds to the principal eigenvector of the normalized link matrix of the web.</I></P>
+                            </UL>
+                            <P>What that means to us is that we can just go ahead and calculate a page’s PR <B>without knowing the final value of the PR of the other pages</B>. That seems strange but, basically, each time we 
+                                run the calculation we’re getting a closer estimate of the final value. So all we need to do is remember the each value we calculate and repeat the calculations lots of times until the numbers stop changing much.</P>
+                            <P>Lets take the simplest example network: two pages, each pointing to the other:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture1" HEIGHT=51 WIDTH=227 SRC="http://www.iprcom.com/papers/pagerank/image001.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Each page has one outgoing link (the outgoing count is 1, i.e. C(A) = 1 and C(B) = 1).</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Guess 1</FONT></B></P>
+                            <P ALIGN=LEFT>We don’t know what their PR should be to begin with, so let’s take a guess at 1.0 and do some calculations:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table3" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>d</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P>= 0.85</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= (1 – d) + d(PR(B)/1)</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= (1 – d) + d(PR(A)/1)</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>i.e.</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table4" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="23%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="76%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 1<BR>= 1</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="23%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD WIDTH="76%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 1<BR>= 1</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Hmm, the numbers aren’t changing at all! So it looks like we started out with a lucky guess!!! </P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Guess 2</FONT></B></P>
+                            <P ALIGN=LEFT>No, that’s too easy, maybe I got it wrong (and it wouldn’t be the first time). Ok, let’s start the guess at 0 instead and re-calculate:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table5" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD VALIGN=TOP WIDTH="33%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0<BR>= 0.15</P>
+                                        </TD>
+                                        <TD WIDTH="41%">
+                                            <P>&nbsp;</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD VALIGN=TOP WIDTH="33%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0.15<BR>= 0.2775</P>
+                                        </TD>
+                                        <TD VALIGN=TOP WIDTH="41%">
+                                            <P ALIGN=LEFT>NB. we’ve already calculated a “next best guess” at PR(A) so we use it here</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>And again:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table6" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0.2775<BR>= 0.385875</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0.385875 <BR>= 0.47799375</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>And again</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table7" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0.47799375<BR>= 0.5562946875</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0.5562946875 <BR>= 0.622850484375</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>and so on. The numbers just keep going up. But will the numbers stop increasing when they get to 1.0? What if a calculation over-shoots and goes above 1.0?</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Guess 3</FONT></B></P>
+                            <P ALIGN=LEFT>Well let’s see. Let’s start the guess at 40 each and do a few cycles:</P>
+                            <UL>
+                                <P ALIGN=LEFT>PR(A) = 40<BR>PR(B) = 40</P>
+                            </UL>
+                            <P ALIGN=LEFT>First calculation</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table8" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 40<BR>= 34.25</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 0.385875 <BR>= 29.1775</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>And again</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table9" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 29.1775<BR>= 24.950875</P>
+                                        </TD>
+                                    </TR>
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(B)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= 0.15 + 0.85 * 24.950875 <BR>= 21.35824375</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Yup, those numbers are heading down alright! It sure looks the numbers will get to 1.0 and stop</P>
+                            <P ALIGN=LEFT><A NAME="ex0"></A>Here’s the code used to calculate this example starting the guess at 0: <A HREF="http://www.iprcom.com/papers/pagerank/src_0">Show the code</A> | <A
+                                 HREF="http://www.iprcom.com/papers/pagerank/pr0.pl">Run the program</A></P>
+                            <UL>
+                                <LI><B>Principle:</B> it doesn’t matter where you start your guess, once the PageRank calculations have settled down, the “<I>normalized probability distribution</I>” (the average PageRank for all pages) will be 1.0
+                                </LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Getting the answer quicker</FONT></B></P>
+                            <P ALIGN=LEFT>How many times do we need to repeat the calculation for big networks? That’s a difficult question; for a network as large as the World Wide Web it can be many millions of iterations! 
+                                The “damping factor” is quite subtle. If it’s too high then it takes ages for the numbers to settle, if it’s too low then you get repeated over-shoot, both above and below the average - the numbers 
+                                just swing about the average like a pendulum and never settle down.</P>
+                            <P ALIGN=LEFT>Also choosing the order of calculations can help. The answer will always come out the same no matter which order you choose, but some orders will get you there quicker than others.</P>
+                            <P ALIGN=LEFT>I’m sure there’s been several Master’s Thesis on how to make this calculation as efficient as possible, but, in the examples below, I’ve used very simple code for clarity and roughly 20 to 
+                                40 iterations were needed!</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex1"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 1</FONT></B></P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture2" HEIGHT=229 WIDTH=319 SRC="http://www.iprcom.com/papers/pagerank/image002.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>I’m not going to repeat the calculations here, but you can see them by running the program (yes, if you click the link the program really is re-run to do the calculations for you)</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_1">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr1.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>So the correct PR for the example is:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture3" HEIGHT=229 WIDTH=428 SRC="http://www.iprcom.com/papers/pagerank/image003.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>You can see it took about 20 iterations before the network began to settle on these values!</P>
+                            <P ALIGN=LEFT>Look at Page D though - it has a PR of 0.15 even though no-one is voting for it (i.e. it has no incoming links)! Is this right?</P>
+                            <P ALIGN=LEFT>The first part, or &quot;term&quot; to be techinal, of the PR equation is doing this:</P>
+                            <UL>
+                                <P ALIGN=LEFT><I>PR(A) = (1-d) + d (PR(T1)/C(T1) + ... + PR(Tn)/C(Tn))</I></P>
+                            </UL>
+                            <P ALIGN=LEFT>So, for Page D, no backlinks means the equation looks like this:</P>
+                            <P ALIGN=LEFT>
+                                <TABLE ID="Table10" BORDER=0 CELLSPACING=3 CELLPADDING=1 WIDTH="94%">
+                                    <TR>
+                                        <TD VALIGN=TOP ALIGN=RIGHT WIDTH="24%">
+                                            <P ALIGN=RIGHT>PR(A)</P>
+                                        </TD>
+                                        <TD WIDTH="75%">
+                                            <P ALIGN=LEFT>= (1-d) + d * (0)<BR>= 0.15</P>
+                                        </TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>no matter what else is going on or how many times you do it.</P>
+                            <UL>
+                                <P ALIGN=LEFT><B>Observation: </B>every page has at least a PR of 0.15 to share out. But this may only be in theory - there are rumours that Google undergoes a post-spidering phase whereby any 
+                                    pages that have no incoming links at all are completely deleted from the index...</P>
+                                <P ALIGN=LEFT>&nbsp;</P>
+                            </UL>
+                            <P ALIGN=LEFT><A NAME="ex2"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 2</FONT></B></P>
+                            <P ALIGN=LEFT>A simple hierarchy with some outgoing links</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture4" HEIGHT=235 WIDTH=429 SRC="http://www.iprcom.com/papers/pagerank/image004.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_2">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr2.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture5" HEIGHT=235 WIDTH=493 SRC="http://www.iprcom.com/papers/pagerank/image005.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>As you’d expect, the home page has the most PR – after all, it has the most incoming links! But what’s happened to the average? It’s only 0.378!!! That doesn’t tie up with what I said earlier 
+                                so something is wrong somewhere!</P>
+                            <P ALIGN=LEFT>Well no, everything is fine. But take a look at the “external site” pages – what’s happening to their PageRank? They’re not passing it on, they’re not voting for anyone, they’re wasting their 
+                                PR like so much pregnant chad!!!  (NB, a more accurate description of this issue can be found in this <A HREF="http://www.marketpositiontalk.com/forums/Index.cfm?CFApp=11&Message_ID=37917" target=_blank>thread</A>)
+                            </P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex3"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 3</FONT></B></P>
+                            <P ALIGN=LEFT>Let’s link those external sites back into our home page just so we can see what happens to the average…</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_3">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr3.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture6" HEIGHT=312 WIDTH=527 SRC="http://www.iprcom.com/papers/pagerank/image006.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>That’s better - it does work after all! And look at the PR of our home page! All those incoming links sure make a difference – we’ll talk more about that later.</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex4"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 4</FONT></B></P>
+                            <P ALIGN=LEFT>What happens to PR if we follow a suggestion about writing page reviews?</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture8" HEIGHT=370 WIDTH=459 SRC="http://www.iprcom.com/papers/pagerank/image007.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_4">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr4.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture7" HEIGHT=370 WIDTH=457 SRC="http://www.iprcom.com/papers/pagerank/image008.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex5"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 5</FONT></B></P>
+                            <P ALIGN=LEFT>A simple hierarchy</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_5">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr5.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture9" HEIGHT=202 WIDTH=236 SRC="http://www.iprcom.com/papers/pagerank/image009.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Our home page has 2 and a half times as much PR as the child pages! Excellent!</P>
+                            <UL>
+                                <LI><B>Observation</B>: a hierarchy concentrates votes and PR into one page</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex6"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 6</FONT></B></P>
+                            <P ALIGN=LEFT>Looping</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_6">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr6.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture10" HEIGHT=177 WIDTH=242 SRC="http://www.iprcom.com/papers/pagerank/image010.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>This is what we’d expect. All the pages have the same number of incoming links, all pages are of equal importance to each other, all pages get the same PR of 1.0 (i.e. the “average” probability).</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex7"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 7</FONT></B></P>
+                            <P ALIGN=LEFT>Extensive Interlinking – or Fully Meshed</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_7">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr7.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture11" HEIGHT=177 WIDTH=241 SRC="http://www.iprcom.com/papers/pagerank/image011.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Yes, the results are the same as the Looping example above and for the same reasons.</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex8"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 8</FONT></B></P>
+                            <P ALIGN=LEFT>Hierarchical – but with a link in and one out.</P>
+                            <P ALIGN=LEFT>We’ll assume there’s an external site that has lots of pages and links with the result that one of the pages has the average PR of 1.0. We’ll also assume the webmaster really likes us – there’s 
+                                just one link from that page and it’s pointing at our home page.</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_8">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr8.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture12" HEIGHT=202 WIDTH=485 SRC="http://www.iprcom.com/papers/pagerank/image012.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>In example 5 the home page only had a PR of 1.92 but now it is 3.31! Excellent! Not only has site A contributed 0.85 PR to us, but the raised PR in the “About”, “Product” and “More” 
+                                pages has had a lovely “feedback” effect, pushing up the home page’s PR even further!</P>
+                            <UL>
+                                <LI>Priciple: a well structured site will amplify the effect of any contributed PR</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex9"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 9</FONT></B></P>
+                            <P ALIGN=LEFT>Looping – but with a link in and a link out</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_9">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr9.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture13" HEIGHT=177 WIDTH=489 SRC="http://www.iprcom.com/papers/pagerank/image013.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Well, the PR of our home page has gone up a little, but what’s happened to the “More” page? </P>
+                            <P ALIGN=LEFT>The vote of the “Product” page has been split evenly between it and the external site. We now value the external Site B equally with our “More” page. The “More” page is getting only half the 
+                                vote it had before – this is good for Site B but very bad for us!</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex10"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 10</FONT></B></P>
+                            <P ALIGN=LEFT>Fully meshed – but with one vote in and one vote out</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_10">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr10.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture14" HEIGHT=177 WIDTH=489 SRC="http://www.iprcom.com/papers/pagerank/image014.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>That’s much better. The “More” page is still getting less share of the vote than in example 7 of course, but now the “Product” page has kept three quarters of its vote within our site - unlike 
+                                example 10 where it was giving away fully half of it’s vote to the external site!</P>
+                            <P ALIGN=LEFT>Keeping just this small extra fraction of the vote within our site has had a very nice effect on the Home Page too – PR of 2.28 compared with just 1.66 in example 10.</P>
+                            <UL>
+                                <LI><B>Observation:</B> increasing the internal links in your site can minimise the damage to your PR when you give away votes by linking to external sites.</LI>
+                                <LI><B>Principle:</B> </LI>
+                                <UL TYPE="1">
+                                    <LI>If a particular page is highly important – use a hierarchical structure with the important page at the “top”.</LI>
+                                    <LI>Where a group of pages may contain outward links – increase the number of internal links to retain as much PR as possible.</LI>
+                                    <LI>Where a group of pages do not contain outward links – the number of internal links in the site has <B>no</B> effect on the site’s average PR. You might as well use a link 
+                                        structure that gives the user the best navigational experience.</LI>
+                                </UL>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Site Maps</FONT></B></P>
+                            <P ALIGN=LEFT>Site maps are useful in at least two ways:</P>
+                            <UL TYPE="1">
+                                <LI>If a user types in a bad URL most websites return a really unhelpful “404 – page not found” error page. This can be discouraging. Why not configure your server to return a 
+                                    page that shows an error has been made, but also gives the site map? This can help the user enormously</LI>
+                                <LI>Linking to a site map on each page increases the number of internal links in the site, spreading the PR out and protecting you against your vote “donations”</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex11"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 11</FONT></B></P>
+                            <P ALIGN=LEFT>Lets try to fix our site to artificially concentrate the PR into the home page.</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture15" HEIGHT=178 WIDTH=302 SRC="http://www.iprcom.com/papers/pagerank/image015.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>That looks good, most of the links seem to be pointing up to page A so we should get a nice PR.</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT>Try to guess what the PR of A will be before you scroll down or run the code.</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_11">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr11.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture16" HEIGHT=178 WIDTH=302 SRC="http://www.iprcom.com/papers/pagerank/image016.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Oh dear, that didn’t work at all well – it’s much worse than just an ordinary hierarchy! What’s going on is that pages C and D have such weak incoming links that they’re no help to page A at all!</P>
+                            <UL>
+                                <LI><B>Principle</B>: trying to abuse the PR calculation is harder than you think.</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex12"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 12</FONT></B></P>
+                            <P ALIGN=LEFT>A common web layout for long documentation is to split the document into many pages with a “Previous” and “Next” link on each plus a link back to the home page. The home page then only 
+                                needs to point to the first page of the document.</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_12">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr12.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture17" HEIGHT=178 WIDTH=302 SRC="http://www.iprcom.com/papers/pagerank/image017.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>In this simple example, where there’s only one document, the first page of the document has a higher PR than the Home Page! This is because page B is getting all the vote from page A, but 
+                                page A is only getting fractions of pages B, C and D.</P>
+                            <UL>
+                                <LI><B>Principle</B>: in order to give users of your site a good experience, you may have to take a hit against your PR. There’s nothing you can do about this - and neither should you try to 
+                                    or worry about it! If your site is a pleasure to use lots of other webmasters will link to it and you’ll get back much more PR than you lost.</LI>
+                            </UL>
+                            <P ALIGN=LEFT>Can you also see the trend between this and the previous example? As you add more internal links to a site it gets closer to the Fully Meshed example where every page gets the average PR for the mesh.</P>
+                            <UL>
+                                <LI><B>Observation</B>: as you add more internal links in your site, the PR will be spread out more evenly between the pages.</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><A NAME="ex13"></A><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Example 13</FONT></B></P>
+                            <P ALIGN=LEFT>Getting high PR the wrong way and the right way.</P>
+                            <P ALIGN=LEFT>Just as an experiment, let’s see if we can get 1,000 pages pointing to our home page, but only have one link leaving it…</P>
+                            <UL>
+                                <P ALIGN=LEFT><A HREF="http://www.iprcom.com/papers/pagerank/src_13">Show the code</A> | <A HREF="http://www.iprcom.com/papers/pagerank/pr13.pl">Run the program</A></P>
+                            </UL>
+                            <P ALIGN=LEFT>
+                                <TABLE WIDTH="100%" BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=TE>
+                                    <TR>
+                                        <TD ALIGN="CENTER"><IMG ID="Picture18" HEIGHT=320 WIDTH=511 SRC="http://www.iprcom.com/papers/pagerank/image018.gif" BORDER=0></TD>
+                                    </TR>
+                                </TABLE>
+                            <P ALIGN=LEFT>Yup, those spam pages are pretty worthless but they sure add up!</P>
+                            <UL>
+                                <LI><B>Observation</B>: it doesn’t matter how many pages you have in your site, your average PR will always be 1.0 at best. But a hierarchical layout can strongly concentrate votes, and 
+                                    therefore the PR, into the home page!</LI>
+                            </UL>
+                            <P ALIGN=LEFT>This is a technique used by some disreputable sites (mostly adult content sites). But I can’t advise this - if Google’s robots decide you’re doing this there’s a good chance you’ll be banned 
+                                from Google! Disaster!</P>
+                            <P ALIGN=LEFT>On the other hand there are at least two right ways to do this:</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">1. Be a Mega-site</FONT></B></P>
+                            <P ALIGN=LEFT>Mega-sites, like <A HREF="http://news.bbc.co.uk/">http://news.bbc.co.uk</A> have tens or hundreds of editors writing new content – 
+                                i.e. new pages - all day long! Each one of those pages has rich, worthwile content of its own and a link back to its parent or the home page! That’s why the Home page Toolbar PR of these 
+                                sites is 9/10 and the rest of us just get pushed lower and lower by comparison…</P>
+                            <UL>
+                                <LI><B>Principle</B>: Content Is King! There really is no substitute for lots of good content…</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">2. Give away something useful</FONT></B></P>
+                            <P ALIGN=LEFT><A HREF="http://www.phpbb.com/">www.phpbb.com</A> has a Toolbar PR of 8/10 (at the time of writing) and it has no big money or marketing behind it! How can this be?</P>
+                            <P ALIGN=LEFT>What the group has done is write a very useful bulletin board system that is becoming very popular on many websites. And at the bottom of every page, in <B>every</B> installation, is this HTML code:</P>
+                            <BLOCKQUOTE ALIGN=LEFT>Powered by &lt;a href=&quot;http://www.phpbb.com/&quot; target=&quot;_blank&quot;&gt;phpBB&lt;/a&gt;</BLOCKQUOTE>
+                            <P ALIGN=LEFT>The administrator of each installation can remove that link, but most don’t because they want to return the favour…</P>
+                            <P ALIGN=LEFT>Can you imagine all those millions of pages giving a fraction of a vote to <A HREF="http://www.phpbb.com/">www.phpbb.com</A>? Wow!</P>
+                            <UL>
+                                <LI><B>Principle</B>: Make it worth other people’s while to use your content or tools. If your give-away is good enough other site admins will gladly give you a link back.</LI>
+                                <LI><B>Principle</B>: it’s probably better to get lots (perhaps thousands) of links from sites with small PR than to spend any time or money desperately trying to get just the one link from a high PR page.</LI>
+                            </UL>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">A Discussion on Averages</FONT></B></P>
+                            <P ALIGN=LEFT>From the Brin and Page paper, the average Actual PR of all pages in the index is 1.0! </P>
+                            <P ALIGN=LEFT>So if you add pages to a site you’re building the total PR will go up by 1.0 for each page (but only if you link the pages together so the equation can work), but the average will remain the same. </P>
+                            <P ALIGN=LEFT>If you want to concentrate the PR into one, or a few, pages then hierarchical linking will do that. 
+                                If you want to average out the PR amongst the pages then &quot;fully meshing&quot; the site (lots of evenly distributed links) will do that - examples 5, 6, and 7 in my above. (NB. this is where Ridings’ 
+                                goes wrong, in his MiniRank model feedback loops will increase PR - indefinitely!)</P>
+                            <P ALIGN=LEFT>Getting inbound links to your site is the only way to increase your site's average PR. How that PR is distributed amongst the pages on your site depends on the details of your internal linking 
+                                and which of your pages are linked to.</P>
+                            <P ALIGN=LEFT>If you give outbound links to other sites then your site's average PR will decrease (you're not keeping your vote &quot;in house&quot; as it were). Again the details of the decrease will depend on the 
+                                details of the linking.</P>
+                            <P ALIGN=LEFT>Given that the average of every page is 1.0 we can see that for every site that has an actual ranking in the millions (and there are some!) there must be lots and lots of sites who's Actual PR 
+                                is below 1.0 (particularly because the absolute lowest Actual PR available is (1 - d)).</P>
+                            <P ALIGN=LEFT>It may be that the Toolbar PR 1,2 correspond to Actual PR's lower than 1.0! E.g. the logbase for the Toolbar may be 10 but the Actual PR sequence could start quite low: 0.01, 0.1, 1, 10, 100, 1,000 etc... 
+                            </P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Finally</FONT></B></P>
+                            <P ALIGN=LEFT>PageRank is, in fact, very simple (apart from one scary looking formula). But when a simple calculation is applied hundreds (or billions) of times over the results can <B>seem</B> complicated.</P>
+                            <P ALIGN=LEFT>PageRank is also only part of the story about what results get displayed high up in a Google listing. For example there’s some evidence to suggest that Google is paying a lot of attention 
+                                these days to the text in a link’s anchor when deciding the relevance of a target page – perhaps more so than the page’s PR…</P>
+                            <P ALIGN=LEFT>PageRank <B>is</B> still part of the listings story though, so it’s worth your while as a good designer to make sure you understand it correctly.</P>
+                            <P ALIGN=LEFT>&nbsp;</P>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">Links</FONT></B></P>
+                            <UL>
+                                <LI>The original PageRank paper by Google’s founders Sergey Brin and Lawrence Page<B> </B>- <A HREF="http://www-db.stanford.edu/~backrub/google.html" target=_blank>http://www-db.stanford.edu/~backrub/google.html</A> 
+                                </LI>
+                                <LI>Chris Ridings’ “PageRank Explained” paper which, as of April 2002 <A HREF="http://web.archive.org/web/*/http://www.goodlookingcooking.co.uk/PageRank.pdf">http://web.archive.org/web/*/http://www.goodlookingcooking.co.uk/PageRank.pdf</A> , 
+                                    contains one major mistake/misunderstanding - <A HREF="http://www.goodlookingcooking.co.uk/PageRank.pdf" target=_blank>http://www.goodlookingcooking.co.uk/PageRank.pdf</A> </LI>
+                                <LI>Phil Craven’s <A HREF="http://webworkshop.net/pagerank_calculator.html" target=_blank>PageRank Calculator</A> (fortunately his figures agree with mine)</LI>
+                                <LI>A detailed explanation of how easy it is to <A HREF="http://www.iprcom.com/papers/pagerank/altered_equation.html">alter the PageRank equation by mistake</A></LI>
+                                <LI>An excellent discussion on chad-jams (including “pregnant chad”) by Douglas W. Jones - <A HREF="http://www.cs.uiowa.edu/~jones/cards/chad.html">http://www.cs.uiowa.edu/~jones/cards/chad.html</A> - I don’t think many people know the 
+                                    United States’ voting system is this flawed!!!</LI>
+                                <LI>Discussion forums on this topic:</LI>
+                                <UL>
+                                    <LI><A HREF="http://www.marketpositiontalk.com/forums/index.cfm?cfapp=11" target=_blank>MarketPositionTalk - PageRank updates</A></LI>
+                                    <LI><A HREF="http://searchengineforums.com/Forum28/HTML/002922.html" target=_blank>SearchEngineForums - PR documents and calculator</A></LI>
+                                    <LI><A HREF="http://www.webmasterworld.com/forum3/3199.htm" target=_blank>WebmasterWorld - PR document and calculator</A></LI>
+                                </UL>
+                            </UL>
+                            <P ALIGN=LEFT><B><FONT SIZE="+1" FACE="Arial,Helvetica,Univers,Zurich BT,sans-serif">About the Author</FONT></B></P>
+                            <P ALIGN=LEFT><A HREF="http://www.ianrogers.net">Ian Rogers</A> first used the Internet in 1986 sending email on a University VAX machine! He first 
+                                installed a webserver in 1990, taught himself HTML and perl CGI scripting. Since then he has been a Senior Research Fellow in User 
+                                Interface Design and a consultant in Network Security and Database Backed Websites. He has had an informal interest in topology and the mathematics and behaviour of networks for years 
+                                and has also been known to do a little Jive dancing.</P>
+                            <P ALIGN=LEFT>This paper was sponsored by <A HREF="http://www.iprcom.com/index.html">IPR Computing Ltd – specialists in Secure Networks and Database Backed Websites</A></P>
+                        </TD>
+                    </TR>
+                </TABLE>
+                <TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 NOF=LY>
+                    <TR VALIGN=TOP ALIGN=LEFT>
+                        <TD WIDTH=7 HEIGHT=10><IMG SRC="http://www.iprcom.com/clearpixel.gif" WIDTH=7 HEIGHT=1 BORDER=0></TD>
+                        <TD></TD>
+                    </TR>
+                    <TR VALIGN=TOP ALIGN=LEFT>
+                        <TD></TD>
+                        <TD NOWRAP NOF="NB_UYHT">
+                            <P>[<A HREF="http://www.iprcom.com/index.html">Home</A>]&nbsp;[<A HREF="http://www.iprcom.com/services/index.html">Services</A>]&nbsp;[<A HREF="http://www.iprcom.com/portfolio/index.html">Portfolio</A>]&nbsp;[<A HREF="http://www.iprcom.com/downloads/index.html">Downloads</A>]&nbsp;[<A
+                                 HREF="http://www.iprcom.com/papers/index.html">White Papers</A>]</P>
+                        </TD>
+                    </TR>
+                </TABLE>
+            </TD>
+        </TR>
+    </TABLE>
+</BODY>
+</HTML>
+ 

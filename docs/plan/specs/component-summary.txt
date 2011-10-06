@@ -1,0 +1,99 @@
+# $Id$
+# ex: set ts=4 noet tw=78:
+
+This document's purpose is to provide an overall summary of the components
+that are going to comprise the search engine system.  Each document's highly
+detailed summary can be found in it's individual specification sheet, which is
+also contained in this directory in the repository.
+(http://svn.thatonewebpage.com/lumen/docs/plan/specs)
+
+In somewhat functional order:
+
+Document Index:
+The document index long-term storage of document metadata; saving the results
+of already-fetched transactions and providing input for spidering.
+
+URL Server:
+The URL Server fetches documents from the Doc Index and sends them to the
+Spider for fetching.
+
+
+Spider:
+The spider receives URLs from a queue and begins to crawl through the net from these
+seeds, following all the links.  The documents the spider finds are sent to the storage
+server for safekeeping.
+
+
+Storage Server:
+The storage server's primary task is to accept documents from the spiders and
+compress them before they are inserted into the repository with a freshly
+assigned document id.
+
+
+Repository:
+The repository will be the central storage area for all the files that are
+fetched by the spiders.  Along with being pre-compressed by a yet to be 
+determined compressor (possible options: gzip, bzip, custom), the
+documents will be stored in a custom database/file system.
+
+
+Indexer:
+The indexer pulls cached documents from the repository (how does the indexer
+know when new documents are ready?) and parses them into "hits"; it them
+redistributes this information to other components. The indexer converts raw
+documents into information that is eventually searchable, and drives the
+entire post-spidering process.
+
+
+Lexicon:
+Storage of individual words seen in any document that has been parsed by the
+Indexer.
+
+
+Anchors:
+The anchor files contain what page the URL linked from, where it links to, and 
+the text of the link (<a href=...>text</a>).  The URL resolver takes the URL's 
+from the anchor files, converts them into document ID's, and then inserts the 
+document id of the page linked from and the page linked to into a links database.
+
+
+URL Resolver:
+"The URLresolver reads the anchors file and converts relative URLs into absolute
+URLs and in turn into docIDs. It puts the anchor text into the forward index, 
+associated with the docID that the anchor points to. It also generates a database 
+of links which are pairs of docIDs." (section 4.1)
+
+
+Links:
+This is a database that maps a document ID to other document IDs that link to it.
+This database is used to generate pagerank calculations.
+
+
+Barrels:
+The barrels contain the forward and inverted indices.  The forward index is a
+mapping of document IDs to word IDs, supplied by the indexer. These are run through 
+the sorter, and this creates the inverted index, which is a mapping of word IDs to
+document IDs, which is far more useful for searches.
+
+
+Sorter:
+The sorter processes the forward indexes from the barrels, and creates the inverted
+indexes. Essentially, takes a mapping of docid->wordids and changes it to a mapping
+of wordid->docids.
+
+
+Pagerank:
+Pagerank is a system that ranks pages by their popularity and allows for results to
+be sorted much more accurately, as more-cited pages hopefully contain better
+information.
+
+
+Searcher:
+The searcher is the actual webpage code, and queries the lexicon, inverted index,
+and the pagerank system to generate result data.
+
+
+
+
+
+

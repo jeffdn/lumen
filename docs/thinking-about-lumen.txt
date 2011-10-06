@@ -1,0 +1,86 @@
+# $Id$
+# ex: set ts=2 et tw=79:
+
+
+* What is our goal?
+
+  "the design and implementation of a 100,000,000-page capacity search engine
+  from scratch as a learning exercise."
+
+  * What is a search engine?
+
+    A search engine makes a pool of documents searchable by a user, enabling
+    an unsophisticated user to find a needle in a haystack in a fraction of
+    a second.
+
+    * How are the fundamental requirements of a search engine?
+
+      Order by importance:
+
+      * Efficient algorithms
+        By definition a search engine deals with a lot of data, so no matter
+        how large our pool of resources, we must use them tp utmost efficiency
+
+      * A Fast Network
+        
+      * Storage
+        Efficient use of LOTS of storage.
+        google.html Section 5.1 states "Due to compression the total size of
+        the repository is about 53 GB, just over one third of the total data
+        it stores." So for N GB on the web, we'll need 0.3N+
+
+      * CPU
+        Lots of calculations to be done, however the bulk of the work is done
+        before a user ever sees the page, and thus does not need low latency
+
+      google.html Section 6.3 says:
+        "In implementing Google, we have seen bottlenecks in CPU, memory access,
+        memory capacity, disk seeks, disk throughput, disk capacity, and network
+        IO. Google has evolved to overcome a number of these bottlenecks during
+        various operations. Google's major data structures make efficient use of
+        available storage space."
+
+    
+	  * What basic components comprise a search engine?
+
+      Assembled from docs/research/google.html and also my own experience
+      -- pizza
+
+      * Spider
+        * Network
+          * Routing
+          * UDP
+            * DNS
+          * TCP/IP
+            * HTTP
+          * Bandwidth
+          * Latency
+          * Database
+            * Storage
+            * Hard disk
+            * Querying
+          * Scheduler
+            * 
+      * URL Index: list of all URL's ever encountered
+      * Document Cache
+        * Storage
+      * Indexer
+        * Lexicon 
+      * Searchable dataset (google's "buckets")
+        * Read-only
+        * Very fast
+      * Frontend
+        * Search box
+        * Results, etc.
+      
+
+      1) Decide what to do
+        1.a) Select from a database a URL
+      2) Attempt to fetch a document
+      3) Record results of document fetch attempt
+      4) If fetch failed, go back to step 1
+      5) 
+
+
+
+
